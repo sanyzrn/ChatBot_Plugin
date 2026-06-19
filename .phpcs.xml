@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<ruleset name="NafasChatbot">
+    <description>PHP CodeSniffer ruleset برای افزونه نفس چت‌بات</description>
+
+    <!-- فایل‌های بررسی‌شونده -->
+    <file>nafas-chatbot</file>
+
+    <!-- استثناها -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*\.min\.js$</exclude-pattern>
+    <!-- فایل‌های JS (phpcs نباید آن‌ها را بررسی کند) -->
+    <exclude-pattern>*/assets/js/*</exclude-pattern>
+
+    <!-- استاندارد اصلی وردپرس -->
+    <rule ref="WordPress">
+        <exclude name="WordPress.Arrays.MultipleStatementAlignment"/>
+    </rule>
+
+    <!-- فایل‌های view متغیرهای قالبی (غیر‌global) دارند — prefix لازم نیست -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <exclude-pattern>*/views/*</exclude-pattern>
+    </rule>
+
+    <!-- جدول‌های افزونه مستقیم کوئری می‌زنند — این عمدی است -->
+    <rule ref="WordPress.DB.DirectDatabaseQuery">
+        <exclude-pattern>*/class-nafas-chatbot-db.php</exclude-pattern>
+    </rule>
+    <rule ref="WordPress.DB.PreparedSQL.InterpolatedNotPrepared">
+        <exclude-pattern>*/class-nafas-chatbot-db.php</exclude-pattern>
+    </rule>
+
+    <!-- حداقل نسخه PHP -->
+    <config name="minimum_supported_wp_version" value="5.9"/>
+    <config name="testVersion" value="7.4-"/>
+
+    <!-- پیش‌وند متغیر افزونه -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="nafas"/>
+                <element value="NAFAS"/>
+                <element value="Nafas"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="nafas-chatbot"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>

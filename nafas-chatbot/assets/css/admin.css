@@ -1,0 +1,676 @@
+/**
+ * پنل مدیریت افزونه نفس — سیستم طراحی مدرن (نسخه ۲.۵.۱).
+ * تمام کلاس‌های مورد استفادهٔ مارک‌آپ و admin.js حفظ شده‌اند.
+ */
+
+/* ============ توکن‌های طراحی ============ */
+.nafas-admin {
+	--nfx-brand: #b61615;
+	--nfx-brand-2: #e11d48;
+	--nfx-brand-dark: #991211;
+	--nfx-ink: #111827;
+	--nfx-muted: #6b7280;
+	--nfx-line: #e7e9ee;
+	--nfx-line-soft: #f1f3f6;
+	--nfx-bg: #f7f8fa;
+	--nfx-card: #ffffff;
+	--nfx-radius: 16px;
+	--nfx-radius-sm: 11px;
+	--nfx-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 10px 26px -14px rgba(17, 24, 39, 0.18);
+	--nfx-shadow-hover: 0 14px 32px -12px rgba(17, 24, 39, 0.26);
+	--nfx-ring: 0 0 0 3px rgba(182, 22, 21, 0.16);
+
+	max-width: 1180px;
+	margin-top: 8px;
+	font-family: 'Vazirmatn', 'Vazir', Tahoma, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	color: var(--nfx-ink);
+}
+.nafas-admin * { box-sizing: border-box; }
+.nafas-admin input,
+.nafas-admin select,
+.nafas-admin textarea,
+.nafas-admin button { font-family: inherit; }
+
+/* ============ سربرگ صفحه ============ */
+.nafas-admin__title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 24px;
+	font-weight: 800;
+	color: var(--nfx-ink);
+	margin: 12px 0 6px;
+	padding: 0;
+	line-height: 1.3;
+}
+.nafas-admin__title .dashicons {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 46px;
+	height: 46px;
+	font-size: 24px;
+	color: #fff;
+	background: linear-gradient(135deg, var(--nfx-brand), var(--nfx-brand-2));
+	border-radius: 13px;
+	box-shadow: 0 8px 18px -8px rgba(182, 22, 21, 0.6);
+	flex-shrink: 0;
+}
+.nafas-admin__ver {
+	font-size: 12px;
+	font-weight: 700;
+	color: var(--nfx-brand);
+	background: rgba(182, 22, 21, 0.08);
+	padding: 4px 11px;
+	border-radius: 999px;
+	letter-spacing: 0.3px;
+}
+.nafas-admin > .description {
+	color: var(--nfx-muted);
+	font-size: 13.5px !important;
+	line-height: 1.9;
+	margin: 4px 0 18px;
+}
+
+/* ============ تب‌ها ============ */
+.nafas-tabs {
+	margin-top: 18px;
+	background: var(--nfx-card);
+	border: 1px solid var(--nfx-line);
+	border-radius: var(--nfx-radius);
+	box-shadow: var(--nfx-shadow);
+	overflow: hidden;
+}
+.nafas-tabs__nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	background: var(--nfx-bg);
+	border-bottom: 1px solid var(--nfx-line);
+	padding: 8px 10px 0;
+}
+.nafas-tab {
+	position: relative;
+	padding: 12px 18px;
+	text-decoration: none;
+	color: var(--nfx-muted);
+	font-weight: 600;
+	font-size: 13.5px;
+	border-radius: 10px 10px 0 0;
+	transition: color 0.15s, background 0.15s;
+}
+.nafas-tab:hover { color: var(--nfx-brand); background: rgba(182, 22, 21, 0.05); }
+.nafas-tab:focus { box-shadow: none; outline: none; }
+.nafas-tab.is-active {
+	color: var(--nfx-brand);
+	background: var(--nfx-card);
+}
+.nafas-tab.is-active::after {
+	content: "";
+	position: absolute;
+	right: 14px;
+	left: 14px;
+	bottom: -1px;
+	height: 3px;
+	border-radius: 3px 3px 0 0;
+	background: linear-gradient(90deg, var(--nfx-brand), var(--nfx-brand-2));
+}
+.nafas-tab-panel { display: none; padding: 28px; animation: nfx-fade 0.25s ease; }
+.nafas-tab-panel.is-active { display: block; }
+@keyframes nfx-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============ عناوین بخش ============ */
+.nafas-section {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	margin: 6px 0 14px;
+	padding: 0 0 12px;
+	border-bottom: 1px solid var(--nfx-line-soft);
+	color: var(--nfx-ink);
+	font-size: 15px;
+	font-weight: 700;
+}
+.nafas-section::before {
+	content: "";
+	width: 4px;
+	height: 18px;
+	border-radius: 4px;
+	background: linear-gradient(180deg, var(--nfx-brand), var(--nfx-brand-2));
+}
+
+/* ============ فرم‌ها و فیلدها ============ */
+.nafas-admin .form-table { margin-top: 4px; }
+.nafas-admin .form-table > tbody > tr > th {
+	width: 240px;
+	padding: 18px 0 18px 16px;
+	font-weight: 600;
+	font-size: 13.5px;
+	color: var(--nfx-ink);
+	vertical-align: top;
+}
+.nafas-admin .form-table > tbody > tr > td { padding: 14px 0; vertical-align: top; }
+.nafas-admin .form-table > tbody > tr { border-bottom: 1px solid var(--nfx-line-soft); }
+.nafas-admin .form-table > tbody > tr:last-child { border-bottom: none; }
+.nafas-admin .description { color: var(--nfx-muted); font-size: 12.5px; line-height: 1.85; margin-top: 7px; }
+
+.nafas-admin input[type="text"],
+.nafas-admin input[type="number"],
+.nafas-admin input[type="url"],
+.nafas-admin input[type="email"],
+.nafas-admin input[type="tel"],
+.nafas-admin input[type="password"],
+.nafas-admin input[type="search"],
+.nafas-admin input[type="date"],
+.nafas-admin select,
+.nafas-admin textarea {
+	border: 1px solid var(--nfx-line);
+	border-radius: var(--nfx-radius-sm);
+	padding: 9px 13px;
+	background: var(--nfx-card);
+	color: var(--nfx-ink);
+	font-size: 13.5px;
+	line-height: 1.6;
+	box-shadow: none;
+	transition: border-color 0.15s, box-shadow 0.15s;
+	min-height: 40px;
+}
+.nafas-admin textarea { min-height: 60px; }
+.nafas-admin input:focus,
+.nafas-admin select:focus,
+.nafas-admin textarea:focus {
+	border-color: var(--nfx-brand);
+	box-shadow: var(--nfx-ring);
+	outline: none;
+}
+.nafas-admin .regular-text { width: 360px; max-width: 100%; }
+.nafas-admin .large-text { width: 100%; }
+.nafas-admin .small-text { width: 90px; min-height: 38px; }
+.nafas-admin input[type="file"] {
+	padding: 9px 13px;
+	border: 1px dashed var(--nfx-line);
+	border-radius: var(--nfx-radius-sm);
+	background: var(--nfx-bg);
+	font-size: 13px;
+	width: 100%;
+	max-width: 420px;
+}
+.nafas-admin input[type="radio"],
+.nafas-admin input[type="checkbox"] { accent-color: var(--nfx-brand); }
+
+/* ============ دکمه‌ها ============ */
+.nafas-admin .button {
+	border-radius: 10px;
+	border: 1px solid var(--nfx-line);
+	background: var(--nfx-card);
+	color: var(--nfx-ink);
+	font-weight: 600;
+	font-size: 13px;
+	padding: 7px 16px;
+	height: auto;
+	min-height: 38px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+	box-shadow: none;
+}
+.nafas-admin .button:hover { background: var(--nfx-bg); border-color: #d4d7de; color: var(--nfx-brand); }
+.nafas-admin .button:active { transform: translateY(1px); }
+.nafas-admin .button .dashicons { margin: 0; font-size: 17px; width: 17px; height: 17px; line-height: 1; }
+.nafas-admin .button-small { min-height: 30px; padding: 3px 11px; font-size: 12px; }
+.nafas-admin .button-primary,
+.nafas-admin .button-primary:focus {
+	background: linear-gradient(135deg, var(--nfx-brand), var(--nfx-brand-2));
+	border: none;
+	color: #fff;
+	box-shadow: 0 8px 18px -8px rgba(182, 22, 21, 0.55);
+	text-shadow: none;
+}
+.nafas-admin .button-primary:hover { background: linear-gradient(135deg, var(--nfx-brand-dark), var(--nfx-brand)); color: #fff; }
+.nafas-admin .button-hero { font-size: 14.5px !important; padding: 11px 30px !important; min-height: 48px; border-radius: 12px; }
+.nafas-admin .submit { margin-top: 22px; padding-top: 0; }
+
+/* ============ سوییچ ============ */
+.nafas-switch { position: relative; display: inline-block; width: 46px; height: 26px; vertical-align: middle; margin-left: 8px; }
+.nafas-switch input { opacity: 0; width: 0; height: 0; }
+.nafas-switch__slider {
+	position: absolute;
+	cursor: pointer;
+	inset: 0;
+	background: #d1d5db;
+	border-radius: 26px;
+	transition: 0.3s;
+}
+.nafas-switch__slider::before {
+	content: "";
+	position: absolute;
+	height: 20px;
+	width: 20px;
+	right: 3px;
+	bottom: 3px;
+	background: #fff;
+	border-radius: 50%;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	transition: 0.3s;
+}
+.nafas-switch input:checked + .nafas-switch__slider { background: linear-gradient(135deg, var(--nfx-brand), var(--nfx-brand-2)); }
+.nafas-switch input:checked + .nafas-switch__slider::before { transform: translateX(-20px); }
+.nafas-switch input:focus + .nafas-switch__slider { box-shadow: var(--nfx-ring); }
+
+/* ============ جدول‌های ویرایشی (محصولات/پاسخ‌ها/بانک) ============ */
+.nafas-products-table {
+	margin-top: 14px;
+	background: var(--nfx-card);
+	border: 1px solid var(--nfx-line);
+	border-radius: var(--nfx-radius);
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow: hidden;
+	box-shadow: var(--nfx-shadow);
+}
+.nafas-products-table thead th {
+	text-align: right;
+	padding: 13px 14px;
+	background: var(--nfx-bg);
+	color: #475467;
+	font-weight: 700;
+	font-size: 12px;
+	border-bottom: 1px solid var(--nfx-line);
+}
+.nafas-products-table td { padding: 10px 12px; vertical-align: top; border-bottom: 1px solid var(--nfx-line-soft); }
+.nafas-products-table tbody tr:last-child td { border-bottom: none; }
+.nafas-products-table .widefat,
+.nafas-products-table input,
+.nafas-products-table textarea,
+.nafas-products-table select { width: 100%; }
+.nafas-remove-product,
+.nafas-remove-quick,
+.nafas-remove-qa {
+	color: #b32d2e !important;
+	border-color: #f3d4d4 !important;
+	width: 34px;
+	height: 34px;
+	min-height: 34px;
+	padding: 0 !important;
+	justify-content: center;
+	font-size: 18px;
+	line-height: 1;
+}
+.nafas-remove-product:hover,
+.nafas-remove-quick:hover,
+.nafas-remove-qa:hover { background: #fef2f2 !important; border-color: #f0b3b3 !important; }
+#nafas-qa-table textarea { min-height: 46px; font-size: 12.5px; }
+.nafas-count { font-size: 13px; color: var(--nfx-muted); font-weight: 600; }
+
+/* ============ کارت‌های آمار ساده ============ */
+.nafas-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin: 20px 0; }
+.nafas-stat-card {
+	background: var(--nfx-card);
+	border: 1px solid var(--nfx-line);
+	border-radius: var(--nfx-radius);
+	padding: 22px;
+	text-align: center;
+	box-shadow: var(--nfx-shadow);
+	border-top: 3px solid #2563eb;
+	transition: transform 0.18s, box-shadow 0.18s;
+}
+.nafas-stat-card:hover { transform: translateY(-3px); box-shadow: var(--nfx-shadow-hover); }
+.nafas-stat-card--red { border-top-color: #dc2626; }
+.nafas-stat-card--purple { border-top-color: #9333ea; }
+.nafas-stat-card__num { display: block; font-size: 30px; font-weight: 800; color: var(--nfx-ink); line-height: 1.1; }
+.nafas-stat-card__label { display: block; font-size: 13px; color: var(--nfx-muted); margin-top: 6px; }
+
+/* ============ نوار فیلتر ============ */
+.nafas-filters {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	margin: 18px 0;
+	flex-wrap: wrap;
+	background: var(--nfx-card);
+	border: 1px solid var(--nfx-line);
+	border-radius: var(--nfx-radius);
+	box-shadow: var(--nfx-shadow);
+	padding: 14px 16px;
+}
+.nafas-filters select, .nafas-filters input[type="search"] { min-height: 40px; }
+.nafas-date-label { font-size: 12.5px; color: var(--nfx-muted); display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.nafas-date-label input[type="date"] { min-height: 38px; }
+.nafas-export-btn { margin-right: auto; }
+.nafas-export-btn .dashicons { margin: 0; }
+
+/* ============ جدول‌های فهرست ============ */
+.nafas-admin .wp-list-table {
+	border: 1px solid var(--nfx-line);
+	border-radius: var(--nfx-radius);
+	overflow: hidden;
+	box-shadow: var(--nfx-shadow);
+	border-collapse: separate;
+	border-spacing: 0;
+	background: var(--nfx-card);
+}
+.nafas-admin .wp-list-table thead th,
+.nafas-submissions th {
+	background: var(--nfx-bg);
+	color: #475467;
+	font-weight: 700;
+	font-size: 12px;
+	text-align: right;
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--nfx-line);
+}
+.nafas-admin .wp-list-table tbody td { padding: 14px 16px; border-bottom: 1px solid var(--nfx-line-soft); color: #374151; font-size: 13px; }
+.nafas-admin .wp-list-table tbody tr:last-child td { border-bottom: none; }
+.nafas-admin .wp-list-table.striped > tbody > :nth-child(odd) { background: transparent; }
+.nafas-admin .wp-list-table tbody tr:hover { background: #fafbfc; }
+.nafas-desc { font-size: 12.5px; color: var(--nfx-muted); line-height: 1.8; }
+.nafas-empty { text-align: center; padding: 56px 20px; color: var(--nfx-muted); font-size: 14px; }
+
+/* نشان‌ها */
+.nafas-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 999px;
+	font-size: 11.5px;
+	font-weight: 700;
+	line-height: 1.6;
+}
+.nafas-badge--red { background: #fef2f2; color: #b91c1c; }
+.nafas-badge--purple { background: #faf5ff; color: #7e22ce; }
+
+.nafas-status-select { max-width: 150px; min-height: 36px !important; }
+.nafas-del-link { color: #b32d2e; text-decoration: none; display: inline-flex; align-items: center; }
+.nafas-del-link:hover { color: #dc2626; }
+.nafas-del-link .dashicons { font-size: 18px; }
+.nafas-inbank { color: #15803d; font-weight: 700; font-size: 12px; margin-left: 8px; background: #f0fdf4; padding: 3px 9px; border-radius: 999px; }
+
+/* صفحه‌بندی */
+.nafas-pagination { margin-top: 18px; }
+.nafas-pagination .page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 36px;
+	height: 36px;
+	padding: 0 10px;
+	margin: 0 2px;
+	border: 1px solid var(--nfx-line);
+	border-radius: 9px;
+	text-decoration: none;
+	background: var(--nfx-card);
+	color: var(--nfx-ink);
+	font-weight: 600;
+	transition: background 0.15s, border-color 0.15s;
+}
+.nafas-pagination a.page-numbers:hover { background: var(--nfx-bg); border-color: var(--nfx-brand); color: var(--nfx-brand); }
+.nafas-pagination .page-numbers.current {
+	background: linear-gradient(135deg, var(--nfx-brand), var(--nfx-brand-2));
+	color: #fff;
+	border-color: transparent;
+}
+
+/* تست اتصال AI */
+.nafas-test-result { display: inline-block; margin-right: 10px; font-weight: 700; vertical-align: middle; font-size: 13px; }
+.nafas-test-result.is-ok { color: #15803d; }
+.nafas-test-result.is-err { color: #b32d2e; }
+
+/* ============ داشبورد: KPI ============ */
+.nafas-kpi-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+	gap: 18px;
+	margin: 22px 0;
+}
+.nafas-kpi {
+	position: relative;
+	background: var(--nfx-card);
+	border: 1px solid var(--nfx-line);
+	border-radius: var(--nfx-radius);
+	padding: 22px 22px 20px;
+	box-shadow: var(--nfx-shadow);
+	overflow: hidden;
+	transition: transform 0.18s, box-shadow 0.18s;
+}
+.nafas-kpi:hover { transform: translateY(-3px); box-shadow: var(--nfx-shadow-hover); }
+.nafas-kpi::before {
+	content: "";
+	position: absolute;
+	inset: 0 0 auto 0;
+	height: 4px;
+	background: var(--nfx-kpi-accent, #2563eb);
+}
+.nafas-kpi--blue   { --nfx-kpi-accent: linear-gradient(90deg, #2563eb, #60a5fa); }
+.nafas-kpi--red    { --nfx-kpi-accent: linear-gradient(90deg, #dc2626, #f87171); }
+.nafas-kpi--purple { --nfx-kpi-accent: linear-gradient(90deg, #9333ea, #c084fc); }
+.nafas-kpi--green  { --nfx-kpi-accent: linear-gradient(90deg, #16a34a, #4ade80); }
+.nafas-kpi__icon {
+	position: absolute;
+	left: 18px;
+	top: 20px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	font-size: 22px;
+	opacity: 1;
+	color: #475467;
+	background: var(--nfx-bg);
+}
+.nafas-kpi--blue   .nafas-kpi__icon { color: #2563eb; background: #eff6ff; }
+.nafas-kpi--red    .nafas-kpi__icon { color: #dc2626; background: #fef2f2; }
+.nafas-kpi--purple .nafas-kpi__icon { color: #9333ea; background: #faf5ff; }
+.nafas-kpi--green  .nafas-kpi__icon { color: #16a34a; background: #f0fdf4; }
+.nafas-kpi__num { display: block; font-size: 34px; font-weight: 800; color: var(--nfx-ink); line-height: 1.1; margin-top: 8px; }
+.nafas-kpi__label { display: block; font-size: 13px; color: var(--nfx-muted); margin-top: 6px; font-weight: 600; }
+
+/* بینش‌ها */
+.nafas-insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 0 0 18px; }
+.nafas-insight {
+	display: block;
+	background: var(--nfx-card);
+	border: 1px solid var(--nfx-line);
+	border-radius: var(--nfx-radius);
+	padding: 18px;
+	text-decoration: none;
+	border-right: 4px solid #2563eb;
+	color: var(--nfx-ink);
+	box-shadow: var(--nfx-shadow);
+	transition: transform 0.18s, box-shadow 0.18s;
+}
+.nafas-insight--amber { border-right-color: #f59e0b; }
+.nafas-insight--green { border-right-color: #16a34a; }
+.nafas-insight--red { border-right-color: #dc2626; }
+.nafas-insight__num { display: block; font-size: 23px; font-weight: 800; color: var(--nfx-ink); }
+.nafas-insight__label { display: block; font-size: 12.5px; color: var(--nfx-muted); margin-top: 5px; font-weight: 600; }
+a.nafas-insight:hover { transform: translateY(-3px); box-shadow: var(--nfx-shadow-hover); }
+
+/* چیدمان دو ستونه + کارت‌ها */
+.nafas-dash-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+@media (max-width: 900px) { .nafas-dash-cols { grid-template-columns: 1fr; } }
+.nafas-card {
+	background: var(--nfx-card);
+	border: 1px solid var(--nfx-line);
+	border-radius: var(--nfx-radius);
+	padding: 22px;
+	margin-bottom: 18px;
+	box-shadow: var(--nfx-shadow);
+}
+.nafas-card__title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 18px;
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--nfx-ink);
+}
+.nafas-card__title .dashicons { color: var(--nfx-brand); }
+.nafas-card__link { margin-right: auto; font-size: 12.5px; text-decoration: none; color: var(--nfx-brand); font-weight: 600; }
+.nafas-card__link:hover { text-decoration: underline; }
+.nafas-card__empty { color: var(--nfx-muted); text-align: center; padding: 32px 0; }
+
+/* نمودار میله‌ای محبوب‌ترین محصولات */
+.nafas-bars { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.nafas-bar__head { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+.nafas-bar__name { font-weight: 700; color: var(--nfx-ink); }
+.nafas-bar__val { color: var(--nfx-muted); font-variant-numeric: tabular-nums; }
+.nafas-bar__track { height: 10px; background: var(--nfx-line-soft); border-radius: 999px; overflow: hidden; }
+.nafas-bar__fill {
+	display: block;
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, var(--nfx-brand), var(--nfx-brand-2));
+	transition: width 0.6s ease;
+}
+
+/* نمودار روند */
+.nafas-trend { display: flex; align-items: flex-end; gap: 5px; height: 170px; padding-top: 10px; }
+.nafas-trend__col { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.nafas-trend__bar {
+	width: 100%;
+	min-height: 4px;
+	background: linear-gradient(180deg, var(--nfx-brand-2), var(--nfx-brand));
+	border-radius: 6px 6px 0 0;
+	transition: height 0.5s ease, background 0.2s;
+}
+.nafas-trend__col:hover .nafas-trend__bar { background: linear-gradient(180deg, #60a5fa, #2563eb); }
+
+/* اکشن‌های ردیف و جزئیات */
+.nafas-row-actions { display: flex; gap: 8px; align-items: center; }
+.nafas-detail-toggle {
+	background: var(--nfx-bg);
+	border: 1px solid var(--nfx-line);
+	color: #2271b1;
+	border-radius: 8px;
+	cursor: pointer;
+	width: 32px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	transition: background 0.15s, color 0.15s;
+}
+.nafas-detail-toggle:hover { background: #eff6ff; }
+.nafas-detail-toggle.is-active { background: linear-gradient(135deg, var(--nfx-brand), var(--nfx-brand-2)); color: #fff; border-color: transparent; }
+.nafas-detail-row > td { background: #fbfbfc; }
+.nafas-detail { display: flex; flex-wrap: wrap; gap: 28px; padding: 12px 6px; }
+.nafas-detail__block { flex: 1; min-width: 240px; }
+.nafas-detail__block h4 { margin: 0 0 10px; font-size: 13px; color: var(--nfx-brand); font-weight: 700; }
+.nafas-detail__block p { margin: 0; line-height: 1.9; color: #374151; }
+.nafas-detail__grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 18px; margin: 0; }
+.nafas-detail__grid dt { font-weight: 700; color: var(--nfx-muted); }
+.nafas-detail__grid dd { margin: 0; color: var(--nfx-ink); }
+
+/* ============ بخش توسعه‌دهندگان (طراحی متمایز) ============ */
+.nafas-credit {
+	position: relative;
+	margin-top: 26px;
+	border-radius: 20px;
+	padding: 26px 28px;
+	overflow: hidden;
+	background: linear-gradient(125deg, #1a1030 0%, #2a1330 45%, #3a1320 100%);
+	color: #f3f4f6;
+	box-shadow: 0 18px 40px -18px rgba(58, 19, 32, 0.7);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.nafas-credit__orb { position: absolute; border-radius: 50%; filter: blur(42px); opacity: 0.55; pointer-events: none; }
+.nafas-credit__orb--a { width: 220px; height: 220px; background: #e11d48; top: -90px; left: -40px; }
+.nafas-credit__orb--b { width: 200px; height: 200px; background: #7c3aed; bottom: -100px; right: 8%; opacity: 0.4; }
+.nafas-credit__inner {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 22px;
+	flex-wrap: wrap;
+}
+.nafas-credit__brand { display: flex; align-items: center; gap: 16px; }
+.nafas-credit__spark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 52px;
+	height: 52px;
+	font-size: 27px;
+	color: #fff;
+	background: linear-gradient(135deg, #e11d48, #f59e0b);
+	border-radius: 15px;
+	box-shadow: 0 8px 20px -6px rgba(225, 29, 72, 0.6);
+	flex-shrink: 0;
+}
+.nafas-credit__title { font-size: 19px; font-weight: 800; letter-spacing: 0.2px; }
+.nafas-credit__title b {
+	background: linear-gradient(90deg, #fb7185, #fbbf24);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	font-weight: 900;
+}
+.nafas-credit__sub { font-size: 13px; color: #cbb8d4; margin-top: 5px; }
+.nafas-credit__contacts { display: flex; gap: 10px; flex-wrap: wrap; }
+.nafas-credit__chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 9px 15px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	color: #f3f4f6 !important;
+	text-decoration: none;
+	font-size: 13px;
+	font-weight: 600;
+	backdrop-filter: blur(4px);
+	transition: background 0.18s, transform 0.18s, border-color 0.18s;
+}
+.nafas-credit__chip:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+.nafas-credit__chip .dashicons { font-size: 17px; width: 17px; height: 17px; color: #fbbf24; }
+@media (max-width: 700px) {
+	.nafas-credit__inner { flex-direction: column; align-items: stretch; }
+	.nafas-credit__contacts { justify-content: flex-start; }
+}
+
+/* ============ صفحهٔ «درباره» ============ */
+.nafas-credit--hero { margin-top: 16px; padding: 40px 28px; text-align: center; }
+.nafas-about__hero { position: relative; z-index: 1; }
+.nafas-credit--hero .nafas-credit__spark { width: 64px; height: 64px; font-size: 34px; border-radius: 18px; margin: 0 auto 14px; }
+.nafas-about__title { font-size: 28px; font-weight: 800; color: #fff; margin: 0 0 8px; }
+.nafas-about__title b { background: linear-gradient(90deg, #fb7185, #fbbf24); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.nafas-about__tagline { font-size: 14px; color: #cbb8d4; margin: 0 0 18px; }
+.nafas-credit--hero .nafas-credit__contacts { justify-content: center; }
+
+.nafas-about__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 18px 0; }
+.nafas-about__stat { background: var(--nfx-card); border: 1px solid var(--nfx-line); border-radius: var(--nfx-radius); padding: 20px; text-align: center; box-shadow: var(--nfx-shadow); }
+.nafas-about__stat span { display: block; font-size: 28px; font-weight: 800; color: var(--nfx-brand); line-height: 1.1; }
+.nafas-about__stat small { display: block; font-size: 12.5px; color: var(--nfx-muted); margin-top: 6px; }
+
+.nafas-about__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.nafas-about__list li { font-size: 13.5px; line-height: 1.9; color: #374151; padding-right: 4px; }
+.nafas-about__list b { color: var(--nfx-ink); }
+
+.nafas-about__tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.nafas-about__tags span {
+	background: var(--nfx-bg);
+	border: 1px solid var(--nfx-line);
+	border-radius: 999px;
+	padding: 6px 14px;
+	font-size: 12.5px;
+	font-weight: 600;
+	color: #475467;
+}
+
+/* اعلان‌ها داخل پنل افزونه */
+.nafas-admin .notice { border-radius: 11px; border-right-width: 4px; box-shadow: var(--nfx-shadow); }
+
+/* واکنش‌گرا */
+@media (max-width: 782px) {
+	.nafas-admin .form-table > tbody > tr > th { width: auto; display: block; padding-bottom: 6px; }
+	.nafas-admin .form-table > tbody > tr > td { display: block; }
+	.nafas-tab { padding: 10px 13px; font-size: 13px; }
+	.nafas-export-btn { margin-right: 0; width: 100%; justify-content: center; }
+}

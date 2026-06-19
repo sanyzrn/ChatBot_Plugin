@@ -1,0 +1,290 @@
+<?php
+/**
+ * بخش نمایش در سایت (Frontend).
+ *
+ * @package NafasChatbot
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * کلاس Frontend.
+ */
+class Nafas_Chatbot_Frontend {
+
+	/**
+	 * آیا اسکریپت‌ها بارگذاری شده‌اند.
+	 *
+	 * @var bool
+	 */
+	protected $assets_done = false;
+
+	/**
+	 * آیا ویجت در صفحه رندر شده (برای جلوگیری از رندر دوباره ویجت شناور).
+	 *
+	 * @var bool
+	 */
+	protected $rendered = false;
+
+	/**
+	 * راه‌اندازی.
+	 */
+	public function __construct() {
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+		add_shortcode( 'nafas_chatbot', array( $this, 'shortcode' ) );
+
+		// در صورت فعال بودن نمایش خودکار شناور.
+		add_action( 'wp_footer', array( $this, 'maybe_render_floating' ) );
+	}
+
+	/**
+	 * ثبت استایل و اسکریپت.
+	 */
+	public function register_assets() {
+		wp_register_style(
+			'nafas-chatbot',
+			NAFAS_CHATBOT_URL . 'assets/css/nafas-chatbot.css',
+			array(),
+			NAFAS_CHATBOT_VERSION
+		);
+
+		// فونت وزیر متن.
+		wp_register_style(
+			'nafas-chatbot-font',
+			'https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css',
+			array(),
+			NAFAS_CHATBOT_VERSION
+		);
+
+		wp_register_script(
+			'nafas-chatbot',
+			NAFAS_CHATBOT_URL . 'assets/js/nafas-chatbot.js',
+			array(),
+			NAFAS_CHATBOT_VERSION,
+			true
+		);
+	}
+
+	/**
+	 * تزریق داده‌های پیکربندی به جاوااسکریپت.
+	 *
+	 * @param array $overrides تنظیمات سفارشی از ویجت المنتور.
+	 */
+	public function enqueue_with_config( $overrides = array() ) {
+		wp_enqueue_style( 'nafas-chatbot-font' );
+		wp_enqueue_style( 'nafas-chatbot' );
+		wp_enqueue_script( 'nafas-chatbot' );
+
+		if ( $this->assets_done ) {
+			return;
+		}
+		$this->assets_done = true;
+
+		$s = Nafas_Chatbot_Settings::all();
+
+		// ساخت دادهٔ محصولات برای کارت محصول (تصویر + خلاصهٔ کوتاه).
+		$knowledge_map = (array) $s['product_knowledge'];
+		$products_cfg  = array();
+		foreach ( (array) $s['products'] as $p ) {
+			if ( empty( $p['id'] ) ) {
+				continue;
+			}
+			$pid     = $p['id'];
+			$summary = isset( $p['summary'] ) ? trim( (string) $p['summary'] ) : '';
+			// در نبود خلاصهٔ دستی، از ابتدای پایگاه دانش محصول استفاده می‌شود.
+			if ( '' === $summary && ! empty( $knowledge_map[ $pid ] ) ) {
+				$summary = wp_strip_all_tags( (string) $knowledge_map[ $pid ] );
+				$summary = mb_substr( trim( $summary ), 0, 160 );
+			}
+			$products_cfg[] = array(
+				'id'       => $pid,
+				'name'     => isset( $p['name'] ) ? $p['name'] : $pid,
+				'brochure' => isset( $p['brochure'] ) ? $p['brochure'] : '',
+				'image'    => isset( $p['image'] ) ? $p['image'] : '',
+				'summary'  => $summary,
+			);
+		}
+
+		// ادغام تنظیمات سراسری با تنظیمات ویجت.
+		$config = array(
+			'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+			'nonce'          => wp_create_nonce( 'nafas_chatbot_nonce' ),
+			'companyId'      => $s['company_id'],
+			'companyName'    => $s['company_name'],
+			'headerTitle'    => $s['header_title'],
+			'welcomeTitle'   => $s['welcome_title'],
+			'welcomeText'    => $s['welcome_text'],
+			'disclaimer'     => $s['disclaimer'],
+			'show'           => array(
+				'company'  => 'yes' === $s['show_company'],
+				'products' => 'yes' === $s['show_products'],
+				'adr'      => 'yes' === $s['show_adr'],
+				'consult'  => 'yes' === $s['show_consult'],
+			),
+			'labels'         => array(
+				'companyTitle'  => $s['company_btn_title'],
+				'companyDesc'   => $s['company_btn_desc'],
+				'productsTitle' => $s['products_btn_title'],
+				'productsDesc'  => $s['products_btn_desc'],
+				'adrTitle'      => $s['adr_btn_title'],
+				'consultTitle'  => $s['consult_btn_title'],
+			),
+			'products'       => array_values( $products_cfg ),
+			'supportPhone'   => $s['support_phone'],
+			'position'       => $s['position'],
+			'primaryColor'   => $s['primary_color'],
+			'primaryHover'   => $s['primary_hover'],
+			'themeMode'      => $s['theme_mode'],
+			'buttonSize'     => $s['button_size'],
+			'iconSize'       => $s['icon_size'],
+			'buttonRadius'   => $s['button_radius'],
+			'buttonIconUrl'  => $s['button_icon_url'],
+			'quickRepliesEnabled' => ( 'yes' === $s['quick_replies_enabled'] ),
+			'quickReplies'   => array_values( (array) $s['quick_replies'] ),
+			'brochureLabel'  => 'مشاهده بروشور',
+			'adrOptions'     => Nafas_Chatbot_Settings::adr_options(),
+			'feedbackEnabled'   => ( 'yes' === $s['feedback_enabled'] ),
+			'typewriter'        => ( 'yes' === $s['typewriter_enabled'] ),
+			'proactiveEnabled'  => ( 'yes' === $s['proactive_enabled'] ),
+			'proactiveDelay'    => (int) $s['proactive_delay'],
+			'proactiveText'     => $s['proactive_text'],
+			'online'            => Nafas_Chatbot_Settings::is_online(),
+			'statusText'        => Nafas_Chatbot_Settings::is_online() ? $s['online_text'] : $s['offline_text'],
+
+			// قابلیت‌های نسخه ۲.۵.
+			'suggestionsEnabled'  => ( 'yes' === $s['suggestions_enabled'] ),
+			'autocompleteEnabled' => ( 'yes' === $s['autocomplete_enabled'] ),
+			'voiceEnabled'        => ( 'yes' === $s['voice_enabled'] ),
+			'csatEnabled'         => ( 'yes' === $s['csat_enabled'] ),
+			'handoffEnabled'      => ( 'yes' === $s['handoff_enabled'] ),
+			'handoffText'         => $s['handoff_text'],
+			'consentEnabled'      => ( 'yes' === $s['consent_enabled'] ),
+			'consentText'         => $s['consent_text'],
+			'consentLink'         => $s['consent_link'],
+			'i18n'                => array(
+				'handoffBtn'      => __( 'گفتگو با کارشناس انسانی', 'nafas-chatbot' ),
+				'csatTitle'       => __( 'گفتگوی ما چطور بود؟', 'nafas-chatbot' ),
+				'csatThanks'      => __( 'سپاس از امتیاز شما 🙏', 'nafas-chatbot' ),
+				'csatSkip'        => __( 'رد کردن', 'nafas-chatbot' ),
+				'mainMenu'        => __( 'منوی اصلی', 'nafas-chatbot' ),
+				'speak'           => __( 'شنیدن پاسخ', 'nafas-chatbot' ),
+				'speakStop'       => __( 'توقف صدا', 'nafas-chatbot' ),
+				'mic'             => __( 'گفتن با صدا', 'nafas-chatbot' ),
+				'micListening'    => __( 'در حال شنیدن…', 'nafas-chatbot' ),
+				'suggestionsHint' => __( 'سوالات مرتبط:', 'nafas-chatbot' ),
+				'consentRequired' => __( 'برای ادامه، موافقت با حریم خصوصی الزامی است.', 'nafas-chatbot' ),
+				'privacy'         => __( 'سیاست حریم خصوصی', 'nafas-chatbot' ),
+				'copy'            => __( 'کپی پاسخ', 'nafas-chatbot' ),
+				'copied'          => __( 'کپی شد ✓', 'nafas-chatbot' ),
+				'callUs'          => __( 'تماس با ما', 'nafas-chatbot' ),
+				'brochureBtn'     => __( 'بروشور', 'nafas-chatbot' ),
+				'urgentReport'    => __( 'گزارش فوری عارضه', 'nafas-chatbot' ),
+				'sent'            => __( 'ارسال شد', 'nafas-chatbot' ),
+			),
+		);
+
+		// اعمال overrides از ویجت.
+		$config = $this->apply_overrides( $config, $overrides );
+
+		wp_localize_script( 'nafas-chatbot', 'NafasChatbotConfig', $config );
+	}
+
+	/**
+	 * اعمال تنظیمات سفارشی ویجت روی پیکربندی.
+	 *
+	 * @param array $config    پیکربندی پایه.
+	 * @param array $overrides تنظیمات ویجت.
+	 * @return array
+	 */
+	protected function apply_overrides( $config, $overrides ) {
+		if ( empty( $overrides ) || ! is_array( $overrides ) ) {
+			return $config;
+		}
+		$map = array(
+			'header_title'  => 'headerTitle',
+			'welcome_title' => 'welcomeTitle',
+			'welcome_text'  => 'welcomeText',
+			'company_name'  => 'companyName',
+			'position'      => 'position',
+			'primary_color' => 'primaryColor',
+			'primary_hover' => 'primaryHover',
+			'theme_mode'    => 'themeMode',
+			'disclaimer'    => 'disclaimer',
+		);
+		foreach ( $map as $from => $to ) {
+			if ( isset( $overrides[ $from ] ) && '' !== $overrides[ $from ] ) {
+				$config[ $to ] = $overrides[ $from ];
+			}
+		}
+		// نمایش گزینه‌ها.
+		foreach ( array( 'company', 'products', 'adr', 'consult' ) as $opt ) {
+			$key = 'show_' . $opt;
+			if ( isset( $overrides[ $key ] ) && '' !== $overrides[ $key ] ) {
+				$config['show'][ $opt ] = ( 'yes' === $overrides[ $key ] || '1' === (string) $overrides[ $key ] );
+			}
+		}
+		// محصولات سفارشی.
+		if ( ! empty( $overrides['products'] ) && is_array( $overrides['products'] ) ) {
+			$config['products'] = array_values( $overrides['products'] );
+		}
+		return $config;
+	}
+
+	/**
+	 * خروجی HTML کانتینر چت‌بات.
+	 *
+	 * @param array $overrides تنظیمات ویجت.
+	 * @return string
+	 */
+	public function render( $overrides = array() ) {
+		if ( $this->rendered ) {
+			return '';
+		}
+		$this->rendered = true;
+		$this->enqueue_with_config( $overrides );
+
+		return '<div id="nafas-chatbot-root" class="nfx-root" dir="rtl" aria-live="polite"></div>';
+	}
+
+	/**
+	 * شورت‌کد.
+	 *
+	 * @param array $atts ویژگی‌ها.
+	 * @return string
+	 */
+	public function shortcode( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'position' => '',
+			),
+			$atts,
+			'nafas_chatbot'
+		);
+		return $this->render( array_filter( $atts ) );
+	}
+
+	/**
+	 * نمایش خودکار دکمه شناور اگر در تنظیمات فعال باشد.
+	 */
+	public function maybe_render_floating() {
+		if ( 'yes' !== Nafas_Chatbot_Settings::get( 'enabled', 'yes' ) ) {
+			return;
+		}
+		// اگر قبلاً توسط ویجت یا شورت‌کد رندر شده، دوباره رندر نکن.
+		if ( $this->rendered ) {
+			return;
+		}
+		echo wp_kses_post( $this->render() );
+	}
+
+	/**
+	 * بررسی اینکه آیا قبلاً رندر شده.
+	 *
+	 * @return bool
+	 */
+	public function is_rendered() {
+		return $this->rendered;
+	}
+}
