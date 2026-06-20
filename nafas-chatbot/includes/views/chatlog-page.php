@@ -64,27 +64,9 @@ $source_labels = array(
 			<?php else : ?>
 				<?php foreach ( $result['items'] as $row ) : ?>
 					<?php
-					$pname  = isset( $products_map[ $row->product ] ) ? $products_map[ $row->product ] : $row->product;
-					$tobank = wp_nonce_url(
-						add_query_arg(
-							array(
-								'nafas_action' => 'tobank',
-								'cid' => $row->id,
-							),
-							$base_url
-						),
-						'nafas_chatlog_action'
-					);
-					$dellog = wp_nonce_url(
-						add_query_arg(
-							array(
-								'nafas_action' => 'dellog',
-								'cid' => $row->id,
-							),
-							$base_url
-						),
-						'nafas_chatlog_action'
-					);
+					$pname    = isset( $products_map[ $row->product ] ) ? $products_map[ $row->product ] : $row->product;
+					$tobank   = wp_nonce_url( add_query_arg( array( 'nafas_action' => 'tobank', 'cid' => $row->id ), $base_url ), 'nafas_chatlog_action' );
+					$dellog   = wp_nonce_url( add_query_arg( array( 'nafas_action' => 'dellog', 'cid' => $row->id ), $base_url ), 'nafas_chatlog_action' );
 					?>
 					<tr>
 						<td><?php echo esc_html( $pname ? $pname : '—' ); ?></td>

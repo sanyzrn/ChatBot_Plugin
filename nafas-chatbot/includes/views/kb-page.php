@@ -110,16 +110,7 @@ $base_url = admin_url( 'admin.php?page=nafas-chatbot-kb' );
 					<?php
 					$pid    = isset( $doc['product_id'] ) ? $doc['product_id'] : 'general';
 					$pname  = ( 'general' === $pid ) ? __( 'عمومی / شرکت', 'nafas-chatbot' ) : ( isset( $products_map[ $pid ] ) ? $products_map[ $pid ] : $pid );
-					$delurl = wp_nonce_url(
-						add_query_arg(
-							array(
-								'nafas_action' => 'delkb',
-								'doc' => $doc['doc_id'],
-							),
-							$base_url
-						),
-						'nafas_kb_action'
-					);
+					$delurl = wp_nonce_url( add_query_arg( array( 'nafas_action' => 'delkb', 'doc' => $doc['doc_id'] ), $base_url ), 'nafas_kb_action' );
 					?>
 					<tr>
 						<td><strong><?php echo esc_html( $doc['source_title'] ); ?></strong></td>

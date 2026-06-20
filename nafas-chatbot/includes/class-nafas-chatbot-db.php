@@ -42,7 +42,7 @@ class Nafas_Chatbot_DB {
 	/**
 	 * نسخه ساختار دیتابیس (برای مهاجرت).
 	 */
-	const DB_VERSION = '7';
+	const DB_VERSION = '6';
 
 	/**
 	 * دریافت نام کامل جدول.
@@ -115,7 +115,6 @@ class Nafas_Chatbot_DB {
 			concomitant_drugs TEXT NULL,
 			reporter_type VARCHAR(50) NULL,
 			status VARCHAR(20) NOT NULL DEFAULT 'new',
-			notify_status VARCHAR(20) NOT NULL DEFAULT 'pending',
 			ip VARCHAR(100) NULL,
 			created_at DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
 			PRIMARY KEY  (id),
@@ -203,19 +202,6 @@ class Nafas_Chatbot_DB {
 			self::create_table();
 			self::migrate_qa_from_options();
 			self::migrate_stats_from_options();
-			self::maybe_add_notify_status_column();
-		}
-	}
-
-	/**
-	 * اضافه کردن ستون notify_status به جدول submissions اگر وجود ندارد.
-	 */
-	private static function maybe_add_notify_status_column() {
-		global $wpdb;
-		$table = self::table_name();
-		$col   = $wpdb->get_results( "SHOW COLUMNS FROM `{$table}` LIKE 'notify_status'" );
-		if ( empty( $col ) ) {
-			$wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `notify_status` VARCHAR(20) NOT NULL DEFAULT 'pending' AFTER `status`" );
 		}
 	}
 
@@ -334,7 +320,7 @@ class Nafas_Chatbot_DB {
 			'orderby'   => 'created_at',
 			'order'     => 'DESC',
 		);
-		$args     = wp_parse_args( $args, $defaults );
+		$args = wp_parse_args( $args, $defaults );
 
 		$where  = array( '1=1' );
 		$params = array();
@@ -379,8 +365,8 @@ class Nafas_Chatbot_DB {
 		$total     = $params ? $wpdb->get_var( $wpdb->prepare( $count_sql, $params ) ) : $wpdb->get_var( $count_sql ); // phpcs:ignore
 
 		// واکشی ردیف‌ها.
-		$query    = "SELECT * FROM {$table} WHERE {$where_sql} ORDER BY {$orderby} {$order} LIMIT %d OFFSET %d";
-		$q_params = array_merge( $params, array( $per_page, $offset ) );
+		$query     = "SELECT * FROM {$table} WHERE {$where_sql} ORDER BY {$orderby} {$order} LIMIT %d OFFSET %d";
+		$q_params  = array_merge( $params, array( $per_page, $offset ) );
 		$rows      = $wpdb->get_results( $wpdb->prepare( $query, $q_params ) ); // phpcs:ignore
 
 		return array(
@@ -432,77 +418,6 @@ class Nafas_Chatbot_DB {
 	}
 
 	/**
-	 * دریافت یک درخواست با شناسه.
-	 *
-	 * @param int $id شناسه.
-	 * @return object|null
-	 */
-	public static function get_by_id( $id ) {
-		global $wpdb;
-		$table = self::table_name();
-		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", (int) $id ) ); // phpcs:ignore
-	}
-
-	/**
-	 * به‌روزرسانی وضعیت اعلان (notify_status) یک درخواست.
-	 *
-	 * @param int    $id     شناسه.
-	 * @param string $status وضعیت اعلان: pending | sent | failed.
-	 * @return bool
-	 */
-	public static function update_notify_status( $id, $status ) {
-		global $wpdb;
-		$allowed = array( 'pending', 'sent', 'failed', 'disabled' );
-		if ( ! in_array( $status, $allowed, true ) ) {
-			return false;
-		}
-		return (bool) $wpdb->update( // phpcs:ignore
-			self::table_name(),
-			array( 'notify_status' => $status ),
-			array( 'id' => (int) $id ),
-			array( '%s' ),
-			array( '%d' )
-		);
-	}
-
-	/**
-	 * حذف دسته‌ای چند درخواست.
-	 *
-	 * @param int[] $ids آرایه شناسه‌ها.
-	 * @return int تعداد حذف‌شده‌ها.
-	 */
-	public static function bulk_delete( array $ids ) {
-		global $wpdb;
-		$table   = self::table_name();
-		$deleted = 0;
-		foreach ( $ids as $id ) {
-			$deleted += (int) $wpdb->delete( $table, array( 'id' => (int) $id ), array( '%d' ) ); // phpcs:ignore
-		}
-		return $deleted;
-	}
-
-	/**
-	 * تغییر وضعیت دسته‌ای چند درخواست.
-	 *
-	 * @param int[]  $ids    آرایه شناسه‌ها.
-	 * @param string $status وضعیت جدید.
-	 * @return int تعداد به‌روزرسانی‌شده‌ها.
-	 */
-	public static function bulk_update_status( array $ids, $status ) {
-		global $wpdb;
-		$allowed = array( 'new', 'in_progress', 'done', 'archived' );
-		if ( ! in_array( $status, $allowed, true ) ) {
-			return 0;
-		}
-		$table   = self::table_name();
-		$updated = 0;
-		foreach ( $ids as $id ) {
-			$updated += (int) $wpdb->update( $table, array( 'status' => $status ), array( 'id' => (int) $id ), array( '%s' ), array( '%d' ) ); // phpcs:ignore
-		}
-		return $updated;
-	}
-
-	/**
 	 * حذف یک درخواست.
 	 *
 	 * @param int $id شناسه.
@@ -535,13 +450,7 @@ class Nafas_Chatbot_DB {
 		$table = self::table_name();
 		$args  = wp_parse_args(
 			$args,
-			array(
-				'type' => '',
-				'status' => '',
-				'search' => '',
-				'date_from' => '',
-				'date_to' => '',
-			)
+			array( 'type' => '', 'status' => '', 'search' => '', 'date_from' => '', 'date_to' => '' )
 		);
 
 		$where  = array( '1=1' );
@@ -679,7 +588,7 @@ class Nafas_Chatbot_DB {
 			$wpdb->prepare( "SELECT stat_date, cnt FROM {$table} WHERE metric = %s AND stat_date >= %s", $metric, $start ),
 			ARRAY_A
 		);
-		$out   = array();
+		$out = array();
 		foreach ( (array) $rows as $r ) {
 			$out[ $r['stat_date'] ] = (int) $r['cnt'];
 		}
@@ -700,7 +609,7 @@ class Nafas_Chatbot_DB {
 			$wpdb->prepare( "SELECT metric, SUM(cnt) AS c FROM {$table} WHERE metric LIKE %s GROUP BY metric ORDER BY c DESC", $like ),
 			ARRAY_A
 		);
-		$out   = array();
+		$out = array();
 		foreach ( (array) $rows as $r ) {
 			$out[ substr( $r['metric'], strlen( $prefix ) ) ] = (int) $r['c'];
 		}

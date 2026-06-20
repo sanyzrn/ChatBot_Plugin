@@ -28,11 +28,11 @@ class Nafas_Chatbot_Admin {
 	 * ثبت منوی مدیریت.
 	 */
 	public function register_menu() {
-		$counts    = Nafas_Chatbot_DB::counts();
+		$counts   = Nafas_Chatbot_DB::counts();
 		$new_count = 0;
 		// شمارش درخواست‌های جدید برای نشان (badge).
 		global $wpdb;
-		$table = Nafas_Chatbot_DB::table_name();
+		$table     = Nafas_Chatbot_DB::table_name();
 		// phpcs:ignore WordPress.DB
 		$new_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE status = %s", 'new' ) );
 
@@ -152,8 +152,8 @@ class Nafas_Chatbot_Admin {
 	 * @return string پیام نتیجه.
 	 */
 	protected function save_kb() {
-		$in                   = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification -- بررسی شده.
-		$new                  = array();
+		$in  = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification -- بررسی شده.
+		$new = array();
 		$new['kb_enabled']    = ( isset( $in['kb_enabled'] ) && ( '1' === (string) $in['kb_enabled'] || 'yes' === $in['kb_enabled'] || 'on' === $in['kb_enabled'] ) ) ? 'yes' : 'no';
 		$new['kb_max_chunks'] = isset( $in['kb_max_chunks'] ) ? max( 1, min( 8, (int) $in['kb_max_chunks'] ) ) : 3;
 		Nafas_Chatbot_Settings::update( $new );
@@ -189,10 +189,10 @@ class Nafas_Chatbot_Admin {
 	 * رندر صفحه تاریخچه گفتگو.
 	 */
 	public function render_chatlog_page() {
-		$source       = isset( $_GET['source'] ) ? sanitize_text_field( wp_unslash( $_GET['source'] ) ) : '';
-		$search       = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
-		$paged        = isset( $_GET['paged'] ) ? max( 1, (int) $_GET['paged'] ) : 1;
-		$result       = Nafas_Chatbot_DB::get_chatlog(
+		$source = isset( $_GET['source'] ) ? sanitize_text_field( wp_unslash( $_GET['source'] ) ) : '';
+		$search = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
+		$paged  = isset( $_GET['paged'] ) ? max( 1, (int) $_GET['paged'] ) : 1;
+		$result = Nafas_Chatbot_DB::get_chatlog(
 			array(
 				'source'   => $source,
 				'search'   => $search,
@@ -270,12 +270,9 @@ class Nafas_Chatbot_Admin {
 		if ( isset( $_POST['nafas_chatbot_save_settings'] ) ) {
 			check_admin_referer( 'nafas_chatbot_settings' );
 			$this->save_settings();
-			add_action(
-				'admin_notices',
-				function () {
-					echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'تنظیمات با موفقیت ذخیره شد.', 'nafas-chatbot' ) . '</p></div>';
-				}
-			);
+			add_action( 'admin_notices', function () {
+				echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'تنظیمات با موفقیت ذخیره شد.', 'nafas-chatbot' ) . '</p></div>';
+			} );
 		}
 
 		// تغییر وضعیت درخواست.
@@ -296,59 +293,22 @@ class Nafas_Chatbot_Admin {
 			exit;
 		}
 
-		// عملیات دسته‌ای روی درخواست‌ها.
-		if ( isset( $_POST['nafas_bulk_action'], $_POST['nafas_bulk_nonce'], $_POST['sids'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nafas_bulk_nonce'] ) ), 'nafas_bulk_action' ) ) {
-				wp_die( esc_html__( 'خطای امنیتی. لطفاً صفحه را رفرش کنید.', 'nafas-chatbot' ) );
-			}
-			$bulk_action = sanitize_text_field( wp_unslash( $_POST['nafas_bulk_action'] ) );
-			$raw_ids     = array_map( 'intval', (array) $_POST['sids'] );
-			$ids         = array_filter( $raw_ids );
-			if ( $ids ) {
-				if ( 'delete' === $bulk_action ) {
-					$count = Nafas_Chatbot_DB::bulk_delete( $ids );
-					add_action(
-						'admin_notices',
-						function () use ( $count ) {
-							echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( sprintf( __( '%d درخواست حذف شد.', 'nafas-chatbot' ), $count ) ) . '</p></div>';
-						}
-					);
-				} elseif ( in_array( $bulk_action, array( 'new', 'in_progress', 'done', 'archived' ), true ) ) {
-					$count = Nafas_Chatbot_DB::bulk_update_status( $ids, $bulk_action );
-					add_action(
-						'admin_notices',
-						function () use ( $count ) {
-							echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( sprintf( __( 'وضعیت %d درخواست به‌روزرسانی شد.', 'nafas-chatbot' ), $count ) ) . '</p></div>';
-						}
-					);
-				}
-			}
-			wp_safe_redirect( remove_query_arg( array( 'nafas_bulk_action', 'nafas_bulk_nonce', 'sids' ) ) );
-			exit;
-		}
-
 		// ذخیره بانک پاسخ‌ها (شامل ایمپورت فایل).
 		if ( isset( $_POST['nafas_chatbot_save_qa'] ) ) {
 			check_admin_referer( 'nafas_chatbot_qa' );
 			$msg = $this->save_qa_bank();
-			add_action(
-				'admin_notices',
-				function () use ( $msg ) {
-					echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $msg ) . '</p></div>';
-				}
-			);
+			add_action( 'admin_notices', function () use ( $msg ) {
+				echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $msg ) . '</p></div>';
+			} );
 		}
 
 		// ذخیره پایگاه دانش (تنظیمات + افزودن سند).
 		if ( isset( $_POST['nafas_chatbot_save_kb'] ) ) {
 			check_admin_referer( 'nafas_chatbot_kb' );
 			$msg = $this->save_kb();
-			add_action(
-				'admin_notices',
-				function () use ( $msg ) {
-					echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $msg ) . '</p></div>';
-				}
-			);
+			add_action( 'admin_notices', function () use ( $msg ) {
+				echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $msg ) . '</p></div>';
+			} );
 		}
 
 		// حذف یک سند از پایگاه دانش.
@@ -415,17 +375,17 @@ class Nafas_Chatbot_Admin {
 		$new = array();
 
 		// حالت و فعال‌سازی لاگ.
-		$mode                          = isset( $in['qa_mode'] ) ? sanitize_text_field( $in['qa_mode'] ) : 'ai_first';
-		$new['qa_mode']                = in_array( $mode, array( 'ai_first', 'bank_first', 'bank_only' ), true ) ? $mode : 'ai_first';
-		$new['chatlog_enabled']        = ( isset( $in['chatlog_enabled'] ) && ( '1' === (string) $in['chatlog_enabled'] || 'yes' === $in['chatlog_enabled'] || 'on' === $in['chatlog_enabled'] ) ) ? 'yes' : 'no';
+		$mode             = isset( $in['qa_mode'] ) ? sanitize_text_field( $in['qa_mode'] ) : 'ai_first';
+		$new['qa_mode']   = in_array( $mode, array( 'ai_first', 'bank_first', 'bank_only' ), true ) ? $mode : 'ai_first';
+		$new['chatlog_enabled'] = ( isset( $in['chatlog_enabled'] ) && ( '1' === (string) $in['chatlog_enabled'] || 'yes' === $in['chatlog_enabled'] || 'on' === $in['chatlog_enabled'] ) ) ? 'yes' : 'no';
 		$new['chatlog_retention_days'] = isset( $in['chatlog_retention_days'] ) ? max( 0, min( 3650, (int) $in['chatlog_retention_days'] ) ) : 90;
 
 		// ردیف‌های دستی.
 		$bank = array();
 		if ( isset( $in['qa_question'] ) && is_array( $in['qa_question'] ) ) {
-			$products = isset( $in['qa_product'] ) ? $in['qa_product'] : array();
-			$keywords = isset( $in['qa_keywords'] ) ? $in['qa_keywords'] : array();
-			$answers  = isset( $in['qa_answer'] ) ? $in['qa_answer'] : array();
+			$products  = isset( $in['qa_product'] ) ? $in['qa_product'] : array();
+			$keywords  = isset( $in['qa_keywords'] ) ? $in['qa_keywords'] : array();
+			$answers   = isset( $in['qa_answer'] ) ? $in['qa_answer'] : array();
 			foreach ( $in['qa_question'] as $i => $q ) {
 				$q = sanitize_textarea_field( $q );
 				$a = isset( $answers[ $i ] ) ? sanitize_textarea_field( $answers[ $i ] ) : '';
@@ -487,7 +447,7 @@ class Nafas_Chatbot_Admin {
 	 * @return array
 	 */
 	protected function parse_qa_import( $content, $fname ) {
-		$rows    = array();
+		$rows = array();
 		$content = trim( (string) $content );
 		if ( '' === $content ) {
 			return $rows;
@@ -514,8 +474,8 @@ class Nafas_Chatbot_Admin {
 		}
 
 		// CSV: ستون‌ها product,question,keywords,answer (با سرستون).
-		$lines = preg_split( '/\r\n|\r|\n/', $content );
-		$first = true;
+		$lines  = preg_split( '/\r\n|\r|\n/', $content );
+		$first  = true;
 		foreach ( $lines as $line ) {
 			if ( '' === trim( $line ) ) {
 				continue;
@@ -551,56 +511,24 @@ class Nafas_Chatbot_Admin {
 	protected function save_settings() {
 		$in = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification -- بررسی شده در handle_actions.
 
-		$fields_text     = array(
-			'company_name',
-			'company_id',
-			'header_title',
-			'company_btn_title',
-			'company_btn_desc',
-			'products_btn_title',
-			'products_btn_desc',
-			'adr_btn_title',
-			'consult_btn_title',
-			'position',
-			'theme_mode',
-			'ai_provider',
-			'gemini_model',
-			'openai_model',
-			'claude_model',
-			'custom_model',
-			'notify_platform',
-			'proactive_text',
-			'online_text',
-			'offline_text',
-			'support_phone',
+		$fields_text = array(
+			'company_name', 'company_id', 'header_title', 'company_btn_title', 'company_btn_desc',
+			'products_btn_title', 'products_btn_desc', 'adr_btn_title', 'consult_btn_title',
+			'position', 'theme_mode', 'ai_provider', 'gemini_model', 'openai_model',
+			'claude_model', 'custom_model', 'notify_platform',
+			'proactive_text', 'online_text', 'offline_text', 'support_phone',
 		);
 		$fields_textarea = array( 'welcome_text', 'disclaimer', 'ai_system_prompt', 'ai_fallback_msg', 'welcome_title', 'handoff_text', 'consent_text' );
 		$fields_raw      = array(
-			'ai_webhook_url',
-			'notify_chat_id',
-			'email_to',
+			'ai_webhook_url', 'notify_chat_id', 'email_to',
 		);
 		$fields_color    = array( 'primary_color', 'primary_hover' );
 		$fields_toggle   = array(
-			'enabled',
-			'show_company',
-			'show_products',
-			'show_adr',
-			'show_consult',
-			'notify_enabled',
-			'email_enabled',
-			'ai_strict_knowledge',
-			'ai_cache_enabled',
-			'feedback_enabled',
-			'typewriter_enabled',
-			'proactive_enabled',
-			'office_enabled',
-			'suggestions_enabled',
-			'autocomplete_enabled',
-			'voice_enabled',
-			'csat_enabled',
-			'handoff_enabled',
-			'consent_enabled',
+			'enabled', 'show_company', 'show_products', 'show_adr', 'show_consult',
+			'notify_enabled', 'email_enabled', 'ai_strict_knowledge', 'ai_cache_enabled',
+			'feedback_enabled', 'typewriter_enabled', 'proactive_enabled', 'office_enabled',
+			'suggestions_enabled', 'autocomplete_enabled', 'voice_enabled', 'csat_enabled',
+			'handoff_enabled', 'consent_enabled',
 		);
 
 		$new = array();
@@ -621,18 +549,18 @@ class Nafas_Chatbot_Admin {
 			$new[ $f ] = ( isset( $in[ $f ] ) && ( '1' === (string) $in[ $f ] || 'yes' === $in[ $f ] || 'on' === $in[ $f ] ) ) ? 'yes' : 'no';
 		}
 
-		$new['email_to']                   = isset( $in['email_to'] ) ? sanitize_email( $in['email_to'] ) : '';
-		$new['ai_rate_limit']              = isset( $in['ai_rate_limit'] ) ? max( 0, (int) $in['ai_rate_limit'] ) : 100;
-		$rl_mode                           = isset( $in['rate_limit_mode'] ) ? sanitize_text_field( $in['rate_limit_mode'] ) : 'ip';
-		$new['rate_limit_mode']            = in_array( $rl_mode, array( 'ip', 'session', 'both', 'off' ), true ) ? $rl_mode : 'ip';
-		$new['session_rate_limit']         = isset( $in['session_rate_limit'] ) ? max( 0, (int) $in['session_rate_limit'] ) : 50;
+		$new['email_to']        = isset( $in['email_to'] ) ? sanitize_email( $in['email_to'] ) : '';
+		$new['ai_rate_limit']   = isset( $in['ai_rate_limit'] ) ? max( 0, (int) $in['ai_rate_limit'] ) : 100;
+		$rl_mode                = isset( $in['rate_limit_mode'] ) ? sanitize_text_field( $in['rate_limit_mode'] ) : 'ip';
+		$new['rate_limit_mode'] = in_array( $rl_mode, array( 'ip', 'session', 'both', 'off' ), true ) ? $rl_mode : 'ip';
+		$new['session_rate_limit'] = isset( $in['session_rate_limit'] ) ? max( 0, (int) $in['session_rate_limit'] ) : 50;
 		$new['submissions_retention_days'] = isset( $in['submissions_retention_days'] ) ? max( 0, min( 3650, (int) $in['submissions_retention_days'] ) ) : 0;
-		$new['ai_history_limit']           = isset( $in['ai_history_limit'] ) ? max( 0, min( 20, (int) $in['ai_history_limit'] ) ) : 8;
-		$new['ai_temperature']             = isset( $in['ai_temperature'] ) ? (string) max( 0, min( 1, (float) $in['ai_temperature'] ) ) : '0.4';
-		$new['ai_max_tokens']              = isset( $in['ai_max_tokens'] ) ? max( 100, min( 4000, (int) $in['ai_max_tokens'] ) ) : 800;
-		$new['ai_webhook_url']             = isset( $in['ai_webhook_url'] ) ? esc_url_raw( $in['ai_webhook_url'] ) : '';
-		$new['custom_endpoint']            = isset( $in['custom_endpoint'] ) ? esc_url_raw( $in['custom_endpoint'] ) : '';
-		$new['consent_link']               = isset( $in['consent_link'] ) ? esc_url_raw( $in['consent_link'] ) : '';
+		$new['ai_history_limit'] = isset( $in['ai_history_limit'] ) ? max( 0, min( 20, (int) $in['ai_history_limit'] ) ) : 8;
+		$new['ai_temperature']  = isset( $in['ai_temperature'] ) ? (string) max( 0, min( 1, (float) $in['ai_temperature'] ) ) : '0.4';
+		$new['ai_max_tokens']   = isset( $in['ai_max_tokens'] ) ? max( 100, min( 4000, (int) $in['ai_max_tokens'] ) ) : 800;
+		$new['ai_webhook_url']  = isset( $in['ai_webhook_url'] ) ? esc_url_raw( $in['ai_webhook_url'] ) : '';
+		$new['custom_endpoint'] = isset( $in['custom_endpoint'] ) ? esc_url_raw( $in['custom_endpoint'] ) : '';
+		$new['consent_link']    = isset( $in['consent_link'] ) ? esc_url_raw( $in['consent_link'] ) : '';
 
 		// فیلدهای حساس: فقط در صورت ورود مقدار جدید، رمزنگاری و ذخیره می‌شوند (وگرنه مقدار قبلی حفظ می‌شود).
 		foreach ( Nafas_Chatbot_Settings::secret_fields() as $sf ) {
@@ -642,9 +570,9 @@ class Nafas_Chatbot_Admin {
 		}
 
 		// آیکون شناور.
-		$new['button_size']   = isset( $in['button_size'] ) ? max( 40, min( 120, (int) $in['button_size'] ) ) : 60;
-		$new['icon_size']     = isset( $in['icon_size'] ) ? max( 16, min( 80, (int) $in['icon_size'] ) ) : 28;
-		$new['button_radius'] = isset( $in['button_radius'] ) ? max( 0, min( 50, (int) $in['button_radius'] ) ) : 50;
+		$new['button_size']     = isset( $in['button_size'] ) ? max( 40, min( 120, (int) $in['button_size'] ) ) : 60;
+		$new['icon_size']       = isset( $in['icon_size'] ) ? max( 16, min( 80, (int) $in['icon_size'] ) ) : 28;
+		$new['button_radius']   = isset( $in['button_radius'] ) ? max( 0, min( 50, (int) $in['button_radius'] ) ) : 50;
 
 		// تجربه کاربری / ساعات کاری.
 		$new['proactive_delay'] = isset( $in['proactive_delay'] ) ? max( 2, min( 120, (int) $in['proactive_delay'] ) ) : 12;
@@ -658,11 +586,11 @@ class Nafas_Chatbot_Admin {
 		// محصولات.
 		$products = array();
 		if ( isset( $in['product_id'] ) && is_array( $in['product_id'] ) ) {
-			$ids           = $in['product_id'];
-			$names         = isset( $in['product_name'] ) ? $in['product_name'] : array();
-			$know          = isset( $in['product_knowledge'] ) ? $in['product_knowledge'] : array();
-			$brochures     = isset( $in['product_brochure'] ) ? $in['product_brochure'] : array();
-			$images        = isset( $in['product_image'] ) ? $in['product_image'] : array();
+			$ids       = $in['product_id'];
+			$names     = isset( $in['product_name'] ) ? $in['product_name'] : array();
+			$know      = isset( $in['product_knowledge'] ) ? $in['product_knowledge'] : array();
+			$brochures = isset( $in['product_brochure'] ) ? $in['product_brochure'] : array();
+			$images    = isset( $in['product_image'] ) ? $in['product_image'] : array();
 			$knowledge_map = array();
 			foreach ( $ids as $i => $pid ) {
 				$pid = sanitize_key( $pid );
@@ -672,12 +600,7 @@ class Nafas_Chatbot_Admin {
 				$pname      = isset( $names[ $i ] ) ? sanitize_text_field( $names[ $i ] ) : $pid;
 				$brochure   = isset( $brochures[ $i ] ) ? esc_url_raw( trim( $brochures[ $i ] ) ) : '';
 				$image      = isset( $images[ $i ] ) ? esc_url_raw( trim( $images[ $i ] ) ) : '';
-				$products[] = array(
-					'id' => $pid,
-					'name' => $pname,
-					'brochure' => $brochure,
-					'image' => $image,
-				);
+				$products[] = array( 'id' => $pid, 'name' => $pname, 'brochure' => $brochure, 'image' => $image );
 				if ( isset( $know[ $i ] ) && '' !== trim( $know[ $i ] ) ) {
 					$knowledge_map[ $pid ] = sanitize_textarea_field( $know[ $i ] );
 				}
@@ -690,7 +613,7 @@ class Nafas_Chatbot_Admin {
 
 		// پاسخ‌های پیشنهادی.
 		$new['quick_replies_enabled'] = ( isset( $in['quick_replies_enabled'] ) && ( '1' === (string) $in['quick_replies_enabled'] || 'yes' === $in['quick_replies_enabled'] || 'on' === $in['quick_replies_enabled'] ) ) ? 'yes' : 'no';
-		$quick                        = array();
+		$quick = array();
 		if ( isset( $in['quick_reply_label'] ) && is_array( $in['quick_reply_label'] ) ) {
 			$labels    = $in['quick_reply_label'];
 			$questions = isset( $in['quick_reply_question'] ) ? $in['quick_reply_question'] : array();
@@ -700,10 +623,7 @@ class Nafas_Chatbot_Admin {
 				if ( '' === $label || '' === $q ) {
 					continue;
 				}
-				$quick[] = array(
-					'label' => $label,
-					'question' => $q,
-				);
+				$quick[] = array( 'label' => $label, 'question' => $q );
 			}
 			$new['quick_replies'] = $quick;
 		}
@@ -756,7 +676,7 @@ class Nafas_Chatbot_Admin {
 		check_admin_referer( 'nafas_export' );
 
 		// خروجی بر اساس فیلترهای فعلی صفحه (نوع/وضعیت/جستجو/بازهٔ تاریخ).
-		$filters    = array(
+		$filters = array(
 			'type'      => isset( $_GET['type'] ) ? sanitize_text_field( wp_unslash( $_GET['type'] ) ) : '',
 			'status'    => isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '',
 			'search'    => isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '',
@@ -775,40 +695,22 @@ class Nafas_Chatbot_Admin {
 		fputcsv(
 			$out,
 			array(
-				'شناسه',
-				'نوع',
-				'نام',
-				'تلفن',
-				'محصول',
-				'شرح',
-				'نوع گزارش‌دهنده',
-				'شدت',
-				'پیامد',
-				'شماره سری ساخت',
-				'داروهای همزمان',
-				'وضعیت',
-				'IP',
-				'تاریخ',
+				'شناسه', 'نوع', 'نام', 'تلفن', 'محصول', 'شرح',
+				'نوع گزارش‌دهنده', 'شدت', 'پیامد', 'شماره سری ساخت', 'داروهای همزمان',
+				'وضعیت', 'IP', 'تاریخ',
 			)
 		);
 		foreach ( $rows as $r ) {
 			fputcsv(
 				$out,
 				array(
-					$r['id'],
-					$r['type'],
-					$r['name'],
-					$r['phone'],
-					$r['product'],
-					$r['description'],
+					$r['id'], $r['type'], $r['name'], $r['phone'], $r['product'], $r['description'],
 					isset( $r['reporter_type'] ) ? $r['reporter_type'] : '',
 					isset( $r['severity'] ) ? $r['severity'] : '',
 					isset( $r['outcome'] ) ? $r['outcome'] : '',
 					isset( $r['batch_number'] ) ? $r['batch_number'] : '',
 					isset( $r['concomitant_drugs'] ) ? $r['concomitant_drugs'] : '',
-					$r['status'],
-					$r['ip'],
-					$r['created_at'],
+					$r['status'], $r['ip'], $r['created_at'],
 				)
 			);
 		}

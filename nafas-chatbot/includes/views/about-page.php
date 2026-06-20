@@ -10,11 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$ins = isset( $insights ) ? $insights : array(
-	'qa' => 0,
-	'kb' => 0,
-	'chat' => 0,
-);
+$ins = isset( $insights ) ? $insights : array( 'qa' => 0, 'kb' => 0, 'chat' => 0 );
 ?>
 <div class="wrap nafas-admin nafas-about" dir="rtl">
 

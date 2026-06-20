@@ -40,9 +40,6 @@ class Nafas_Chatbot_Ajax {
 
 		// تست اتصال هوش مصنوعی (فقط مدیر).
 		add_action( 'wp_ajax_nafas_chatbot_test_ai', array( $this, 'handle_test_ai' ) );
-
-		// ارسال مجدد اعلان پیام‌رسان (فقط مدیر).
-		add_action( 'wp_ajax_nafas_retry_notification', array( $this, 'handle_retry_notification' ) );
 	}
 
 	/**
@@ -67,13 +64,8 @@ class Nafas_Chatbot_Ajax {
 		}
 
 		$this->last_error = '';
-		$system           = $this->build_system_text( '', '' );
-		$messages         = array(
-			array(
-				'role' => 'user',
-				'content' => 'سلام، لطفاً در یک جمله کوتاه خودت را معرفی کن.',
-			),
-		);
+		$system   = $this->build_system_text( '', '' );
+		$messages = array( array( 'role' => 'user', 'content' => 'سلام، لطفاً در یک جمله کوتاه خودت را معرفی کن.' ) );
 
 		switch ( $provider ) {
 			case 'gemini':
@@ -304,10 +296,7 @@ class Nafas_Chatbot_Ajax {
 			if ( mb_strlen( $text ) > 1500 ) {
 				$text = mb_substr( $text, 0, 1500 );
 			}
-			$out[] = array(
-				'role' => $role,
-				'content' => $text,
-			);
+			$out[] = array( 'role' => $role, 'content' => $text );
 		}
 
 		// فقط آخرین N پیام را نگه می‌داریم.
@@ -425,7 +414,7 @@ class Nafas_Chatbot_Ajax {
 			if ( '' !== $kb ) {
 				$knowledge = trim( $knowledge . "\n\n— از پایگاه دانش —\n" . $kb );
 			}
-			$system = $this->build_system_text( $product_name, $knowledge );
+			$system   = $this->build_system_text( $product_name, $knowledge );
 
 			// کش پاسخ برای سوال‌های بدون تاریخچه (پاسخ فوری به سوال‌های تکراری + کاهش هزینه).
 			$cache_enabled = ( 'yes' === Nafas_Chatbot_Settings::get( 'ai_cache_enabled', 'yes' ) ) && empty( $history );
@@ -444,10 +433,7 @@ class Nafas_Chatbot_Ajax {
 			while ( ! empty( $messages ) && isset( $messages[0]['role'] ) && 'assistant' === $messages[0]['role'] ) {
 				array_shift( $messages );
 			}
-			$messages[] = array(
-				'role' => 'user',
-				'content' => $message,
-			);
+			$messages[] = array( 'role' => 'user', 'content' => $message );
 
 			$reply = $this->dispatch_ai( $provider, $message, $product_id, $product_name, $system, $messages, $history );
 			if ( ! empty( $reply ) ) {
@@ -559,7 +545,7 @@ class Nafas_Chatbot_Ajax {
 	 * @return array
 	 */
 	protected function tokenize_fa( $text ) {
-		$stop   = array( 'و', 'در', 'به', 'از', 'که', 'را', 'با', 'این', 'آن', 'است', 'هست', 'برای', 'یا', 'تا', 'هم', 'چه', 'چی', 'چیست', 'چطور', 'چگونه', 'ایا', 'آیا', 'می', 'شود', 'کنم', 'کنید', 'کرد', 'های', 'ها', 'یک', 'من', 'شما', 'لطفا', 'لطفاً', 'بگو', 'بگویید', 'دارد', 'دارم', 'مورد', 'درباره', 'راجع', 'باید', 'ایا', 'وقتی', 'کدام', 'چند' );
+		$stop = array( 'و', 'در', 'به', 'از', 'که', 'را', 'با', 'این', 'آن', 'است', 'هست', 'برای', 'یا', 'تا', 'هم', 'چه', 'چی', 'چیست', 'چطور', 'چگونه', 'ایا', 'آیا', 'می', 'شود', 'کنم', 'کنید', 'کرد', 'های', 'ها', 'یک', 'من', 'شما', 'لطفا', 'لطفاً', 'بگو', 'بگویید', 'دارد', 'دارم', 'مورد', 'درباره', 'راجع', 'باید', 'ایا', 'وقتی', 'کدام', 'چند' );
 		$tokens = array_filter(
 			explode( ' ', $text ),
 			function ( $t ) use ( $stop ) {
@@ -674,8 +660,8 @@ class Nafas_Chatbot_Ajax {
 			if ( empty( $entry['answer'] ) ) {
 				continue;
 			}
-			$kw         = isset( $entry['keywords'] ) ? str_replace( array( '|', '،', ',' ), ' ', $entry['keywords'] ) : '';
-			$ref        = $this->normalize_fa( ( isset( $entry['question'] ) ? $entry['question'] : '' ) . ' ' . $kw );
+			$kw   = isset( $entry['keywords'] ) ? str_replace( array( '|', '،', ',' ), ' ', $entry['keywords'] ) : '';
+			$ref  = $this->normalize_fa( ( isset( $entry['question'] ) ? $entry['question'] : '' ) . ' ' . $kw );
 			$ref_tokens = $this->expand_synonyms( $this->tokenize_fa( $ref ) );
 			if ( empty( $ref_tokens ) ) {
 				continue;
@@ -774,7 +760,7 @@ class Nafas_Chatbot_Ajax {
 				break;
 			}
 			$out .= '• از «' . $item['title'] . "»:\n" . $item['chunk'] . "\n\n";
-			++$used;
+			$used++;
 			if ( $used >= $max ) {
 				break;
 			}
@@ -818,11 +804,8 @@ class Nafas_Chatbot_Ajax {
 			if ( isset( $entry['product_id'] ) && $product_id === $entry['product_id'] ) {
 				$score += 0.15;
 			}
-			$score   += min( 0.2, ( (int) ( isset( $entry['usage_count'] ) ? $entry['usage_count'] : 0 ) ) * 0.02 );
-			$scored[] = array(
-				'q' => $q,
-				'score' => $score,
-			);
+			$score += min( 0.2, ( (int) ( isset( $entry['usage_count'] ) ? $entry['usage_count'] : 0 ) ) * 0.02 );
+			$scored[] = array( 'q' => $q, 'score' => $score );
 		}
 		if ( empty( $scored ) ) {
 			return array();
@@ -891,10 +874,7 @@ class Nafas_Chatbot_Ajax {
 				$score += count( array_intersect( $tokens, $ref_tokens ) ) * 0.3;
 			}
 			if ( $score > 0 ) {
-				$scored[] = array(
-					'q' => $q,
-					'score' => $score,
-				);
+				$scored[] = array( 'q' => $q, 'score' => $score );
 			}
 		}
 		usort(
@@ -1048,10 +1028,7 @@ class Nafas_Chatbot_Ajax {
 
 		$msgs = array();
 		if ( $system ) {
-			$msgs[] = array(
-				'role' => 'system',
-				'content' => $system,
-			);
+			$msgs[] = array( 'role' => 'system', 'content' => $system );
 		}
 		foreach ( $messages as $m ) {
 			$msgs[] = array(
@@ -1283,8 +1260,7 @@ class Nafas_Chatbot_Ajax {
 			wp_send_json_error( array( 'message' => 'خطا در ذخیره‌سازی اطلاعات. لطفاً مجدداً تلاش کنید.' ), 500 );
 		}
 
-		// اعلان‌ها — notify_status بر اساس نتیجه ارسال ثبت می‌شود.
-		$row['_db_id'] = $id;
+		// اعلان‌ها.
 		$this->maybe_send_messenger_notification( $row );
 		$this->maybe_send_email_notification( $row );
 
@@ -1352,27 +1328,19 @@ class Nafas_Chatbot_Ajax {
 	 * @param array $row داده‌ها.
 	 */
 	protected function maybe_send_messenger_notification( $row ) {
-		$db_id = isset( $row['_db_id'] ) ? (int) $row['_db_id'] : 0;
-
 		if ( 'yes' !== Nafas_Chatbot_Settings::get( 'notify_enabled', 'no' ) ) {
-			if ( $db_id ) {
-				Nafas_Chatbot_DB::update_notify_status( $db_id, 'disabled' );
-			}
 			return;
 		}
 		$token   = Nafas_Chatbot_Settings::get_secret( 'notify_token' );
 		$chat_id = Nafas_Chatbot_Settings::get( 'notify_chat_id', '' );
 		if ( empty( $token ) || empty( $chat_id ) ) {
-			if ( $db_id ) {
-				Nafas_Chatbot_DB::update_notify_status( $db_id, 'disabled' );
-			}
 			return;
 		}
 		$platform = Nafas_Chatbot_Settings::get( 'notify_platform', 'bale' );
-		$base     = 'telegram' === $platform ? 'https://api.telegram.org/bot' : 'https://tapi.bale.ai/bot';
-		$url      = $base . $token . '/sendMessage';
+		$base      = 'telegram' === $platform ? 'https://api.telegram.org/bot' : 'https://tapi.bale.ai/bot';
+		$url       = $base . $token . '/sendMessage';
 
-		$response = wp_remote_post(
+		wp_remote_post(
 			$url,
 			array(
 				'timeout' => 8,
@@ -1382,31 +1350,6 @@ class Nafas_Chatbot_Ajax {
 				),
 			)
 		);
-
-		if ( $db_id ) {
-			$ok = ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response );
-			Nafas_Chatbot_DB::update_notify_status( $db_id, $ok ? 'sent' : 'failed' );
-		}
-	}
-
-	/**
-	 * ارسال مجدد اعلان پیام‌رسان برای یک درخواست — AJAX ادمین.
-	 */
-	public function handle_retry_notification() {
-		check_ajax_referer( 'nafas_retry_notify', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => 'دسترسی غیرمجاز.' ), 403 );
-		}
-		$id  = isset( $_POST['sid'] ) ? (int) $_POST['sid'] : 0;
-		$row = $id ? Nafas_Chatbot_DB::get_by_id( $id ) : null;
-		if ( ! $row ) {
-			wp_send_json_error( array( 'message' => 'درخواست یافت نشد.' ), 404 );
-		}
-		$data           = (array) $row;
-		$data['_db_id'] = $id;
-		$this->maybe_send_messenger_notification( $data );
-		$updated = Nafas_Chatbot_DB::get_by_id( $id );
-		wp_send_json_success( array( 'notify_status' => $updated ? $updated->notify_status : '' ) );
 	}
 
 	/**

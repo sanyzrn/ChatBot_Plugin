@@ -59,53 +59,19 @@ class Nafas_Chatbot_Settings {
 
 			// محصولات (هر محصول می‌تواند لینک بروشور داشته باشد).
 			'products'           => array(
-				array(
-					'id' => 'capsulizer',
-					'name' => 'کپسولایزر',
-					'brochure' => '',
-					'image' => '',
-				),
-				array(
-					'id' => 'coldanese',
-					'name' => 'کلدانیز پلاس',
-					'brochure' => '',
-					'image' => '',
-				),
-				array(
-					'id' => 'folinozit',
-					'name' => 'فولینوزیت',
-					'brochure' => '',
-					'image' => '',
-				),
-				array(
-					'id' => 'meglozek',
-					'name' => 'مگلوزک',
-					'brochure' => '',
-					'image' => '',
-				),
-				array(
-					'id' => 'tiotoriva',
-					'name' => 'تیوتوریوا',
-					'brochure' => '',
-					'image' => '',
-				),
+				array( 'id' => 'capsulizer', 'name' => 'کپسولایزر', 'brochure' => '', 'image' => '' ),
+				array( 'id' => 'coldanese', 'name' => 'کلدانیز پلاس', 'brochure' => '', 'image' => '' ),
+				array( 'id' => 'folinozit', 'name' => 'فولینوزیت', 'brochure' => '', 'image' => '' ),
+				array( 'id' => 'meglozek', 'name' => 'مگلوزک', 'brochure' => '', 'image' => '' ),
+				array( 'id' => 'tiotoriva', 'name' => 'تیوتوریوا', 'brochure' => '', 'image' => '' ),
 			),
 
 			// پاسخ‌های پیشنهادی (Quick Replies) در گفتگوی محصول.
 			'quick_replies_enabled' => 'yes',
 			'quick_replies'         => array(
-				array(
-					'label' => 'نحوه مصرف',
-					'question' => 'نحوه مصرف صحیح این محصول چگونه است؟',
-				),
-				array(
-					'label' => 'عوارض جانبی',
-					'question' => 'عوارض جانبی شایع این محصول چیست؟',
-				),
-				array(
-					'label' => 'تداخلات دارویی',
-					'question' => 'این محصول با چه داروها یا غذاهایی تداخل دارد؟',
-				),
+				array( 'label' => 'نحوه مصرف', 'question' => 'نحوه مصرف صحیح این محصول چگونه است؟' ),
+				array( 'label' => 'عوارض جانبی', 'question' => 'عوارض جانبی شایع این محصول چیست؟' ),
+				array( 'label' => 'تداخلات دارویی', 'question' => 'این محصول با چه داروها یا غذاهایی تداخل دارد؟' ),
 			),
 
 			// ظاهر.
@@ -214,9 +180,9 @@ class Nafas_Chatbot_Settings {
 		if ( null !== self::$cache ) {
 			return self::$cache;
 		}
-		$saved       = get_option( self::OPTION_KEY, array() );
-		$saved       = is_array( $saved ) ? $saved : array();
-		self::$cache = wp_parse_args( $saved, self::defaults() );
+		$saved        = get_option( self::OPTION_KEY, array() );
+		$saved        = is_array( $saved ) ? $saved : array();
+		self::$cache  = wp_parse_args( $saved, self::defaults() );
 		return self::$cache;
 	}
 
